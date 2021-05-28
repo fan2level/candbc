@@ -15,7 +15,7 @@ class fileDBC(object):
         self.__file = filedbc
         self.__encoding = encoding
 
-        if os.path.exists(filedbc) != True:
+        if os.path.exists(filedbc) == False:
             raise('{0} is not exist'.format(filedbc))
         
         with open(filedbc, 'r', encoding=encoding) as d:
@@ -40,7 +40,7 @@ class fileDBC(object):
                                       'new_symbols':new_symbols.split(' ')}
             
             self.__bit_timing = None
-                
+
             self.__nodes = list()
             # nodes = 'BU_:' {node_name} ;
             # node_name = C_identifier ;
@@ -99,7 +99,7 @@ class fileDBC(object):
     @property
     def contents(self):
         return self.__contents
-        
+
     @property
     def version(self):
         return self.__version
@@ -107,7 +107,7 @@ class fileDBC(object):
     @property
     def new_symbols(self):
         return self.__new_symbols
-    
+
     @property
     def bit_timing(self):
         return self.__bit_timing
@@ -124,12 +124,12 @@ class fileDBC(object):
     def comments(self):
         return self.__comments
 
-    def duplicate(self, output=''):
+    def duplicate(self, output=None):
         """ duplicate dbc file using parsed data
         """
-        if os.path.exists(output) == False:
-            output = self.__file
-        output = os.path.splitext(output)[0] + '.duplicate' + os.path.splitext(output)[1]
+        if output is None:
+            # print('file: {0}'.format(self.__file))
+            output = os.path.splitext(self.__file)[0] + '.duplicate' + os.path.splitext(self.__file)[1]
         with open(output, mode='w', encoding=self.__encoding) as f:
             pass
 

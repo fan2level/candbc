@@ -271,54 +271,71 @@ class fileDBC(object):
                                                                # 'SG_' message_id signal_name attribute_value |
                                                                # 'EV_' env_var_name attribute_value) ';' ;
             # attribute_value = unsigned_integer | signed_integer | double | char_string ;
-            pattern_attribute_values = re.compile('(?P<attribute_values0>BA_)\s+\"(?P<attribute_name>[\w-]+)\"\s+(?P<attribute_value>.*|\".*\")\s*;', re.M)
+            pattern_attribute_values = re.compile('^(?P<attribute_values0>BA_)\s+(?P<attribute_name>\"[-\w]+\")(?P<sigsub>\s+|\s+BU_\s+|\s+BO_\s+|\s+SG_\s+|\s+EV_\s+)(?P<attribute_value>(?!\s*(?:BU_|BO_|SG_|EV_)\s*).+?)\s*;$', re.M|re.S)
             for matchobj in pattern_attribute_values.finditer(self.contents):
                 attribute_values0 = matchobj.group('attribute_values0')
                 attribute_name = matchobj.group('attribute_name')
-                attribute_value0 = matchobj.group('attribute_value')
+                attribute_value0 = matchobj.group('attribute_value').strip()
                 attribute = {'attribute_name':attribute_name, 'attribute_value':None}
                 pattern_attribute_value1 = re.compile('([\d.-]+|\"[\w .]+\")')
-                pattern_attribute_value2 = re.compile('BU_\s+(?P<node_name>\w+)\s(?P<attribute_value>[-\w.]+|\".*\")')
-                pattern_attribute_value3 = re.compile('BO_\s+(?P<message_id>\w+)\s(?P<attribute_value>[-\w.]+|\".*\")')
-                pattern_attribute_value4 = re.compile('SG_\s+(?P<message_id>\w+)\s(?P<signal_name>\w+)\s+(?P<attribute_value>[-\w.]+|\".*\")')
-                pattern_attribute_value5 = re.compile('EV_\s+(?P<env_var_name>\w+)\s(?P<attribute_value>[-\w.]+|\".*\")')
-                m = pattern_attribute_value1.match(attribute_value0)
-                if m:
-                    attribute['attribute_value'] = {'signature':None, 'attribute_value':m.group(1)}
-                else:
+                pattern_attribute_value2 = re.compile('(?P<node_name>\w+)\s(?P<attribute_value>[-\w.]+|\".*\")') # BU_
+                pattern_attribute_value3 = re.compile('(?P<message_id>\d+)\s(?P<attribute_value>[-\w.]+|\".*\")') # BO_
+                pattern_attribute_value4 = re.compile('(?P<message_id>\d+)\s(?P<signal_name>\w+)\s+(?P<attribute_value>[-\d]+|\".*?\")', re.M|re.S) # SG_
+                pattern_attribute_value5 = re.compile('(?P<env_var_name>\w+)\s(?P<attribute_value>[-\w.]+|\".*\")') # EV_
+
+                signature = matchobj.group('sigsub').strip()
+                if signature == '':
+                    signature = None
+
+                if signature is None:
+                    attribute['attribute_value'] = {'signature':None, 'attribute_value':attribute_value0}
+                elif signature == 'BU_':
                     m = pattern_attribute_value2.match(attribute_value0)
                     if m:
                         node_name = m.group('node_name')
                         attribute_value = m.group('attribute_value')
                         # print(node_name, attribute_value)
-                        attribute['attribute_value'] = {'signature':'BU_', 'node_name':node_name, 'attribute_value':attribute_value}
+                        attribute['attribute_value'] = {'signature':signature, 'node_name':node_name, 'attribute_value':attribute_value}
                     else:
-                        m = pattern_attribute_value3.match(attribute_value0)
-                        if m:
-                            message_id = m.group('message_id')
-                            attribute_value = m.group('attribute_value')
-                            # print(message_id, attribute_value)
-                            attribute['attribute_value'] = {'signature':'BO_', 'message_id':message_id, 'attribute_value':attribute_value}
-                        else:
-                            m = pattern_attribute_value4.match(attribute_value0)
-                            if m:
-                                message_id = m.group('message_id')
-                                signal_name = m.group('signal_name')
-                                attribute_value = m.group('attribute_value')
-                                # print(message_id, signal_name, attribute_value)
-                                attribute['attribute_value'] = {'signature':'SG_', 'message_id':message_id, 'signal_name':signal_name, 'attribute_value':attribute_value}
-                            else:
-                                m = pattern_attribute_value5.match(attribute_value0)
-                                if m:
-                                    env_var_name = m.group('env_var_name')
-                                    attribute_value = m.group('attribute_value')
-                                    # print(env_var_name, attribute_value)
-                                    attribute['attribute_value'] = {'signature':'EV_', 'env_var_name':env_var_name, 'attribute_value':attribute_value}
-                                else:
-                                    print('  xxx {0} {1}'.format(attribute_name, attribute_value0))
-                                    continue
+                        print('  xxx {0}/{1}'.format(signature, attribute_value0))
+                        continue
+                elif signature == 'BO_':
+                    m = pattern_attribute_value3.match(attribute_value0)
+                    if m:
+                        message_id = m.group('message_id')
+                        attribute_value = m.group('attribute_value')
+                        # print(message_id, attribute_value)
+                        attribute['attribute_value'] = {'signature':signature, 'message_id':message_id, 'attribute_value':attribute_value}
+                    else:
+                        print('  xxx {0}/{1}'.format(signature, attribute_value0))
+                        continue
+                elif signature == 'SG_':
+                    m = pattern_attribute_value4.match(attribute_value0)
+                    if m:
+                        message_id = m.group('message_id')
+                        signal_name = m.group('signal_name')
+                        attribute_value = m.group('attribute_value')
+                        # print(message_id, signal_name, attribute_value)
+                        attribute['attribute_value'] = {'signature':signature, 'message_id':message_id, 'signal_name':signal_name, 'attribute_value':attribute_value}
+                    else:
+                        print(matchobj.group(0))
+                        print('  xxx {0}/{1}'.format(signature, attribute_value0))
+                        continue
+                elif signature == 'EV_':
+                    m = pattern_attribute_value5.match(attribute_value0)
+                    if m:
+                        env_var_name = m.group('env_var_name')
+                        attribute_value = m.group('attribute_value')
+                        # print(env_var_name, attribute_value)
+                        attribute['attribute_value'] = {'signature':signature, 'env_var_name':env_var_name, 'attribute_value':attribute_value}
+                    else:
+                        print('  xxx {0}/{1}'.format(signature, attribute_value0))
+                        continue
+                else:
+                    print('  xxx {0}/{1}'.format(signature, attribute_value0))
+                    continue
                 self.__attribute_values.append(attribute)
-
+                
             # checkme: format
             self.__attribute_values2 = list()
             # BA_REL_ "GenSigTimeoutTime" BU_SG_REL_ CLU SG_ 1345 CF_Gway_PassiveAccessUnlock 1500;
@@ -562,26 +579,26 @@ class fileDBC(object):
                 attribute_name = attribute_value['attribute_name']
                 value = attribute_value['attribute_value']
                 if value['signature'] is None:
-                    print('BA_ "{0}" {1};'.format(attribute_name,
+                    print('BA_ {0} {1};'.format(attribute_name,
                                                   value['attribute_value']), file=f)
                 elif value['signature'] == 'BU_':
-                    print('BA_ "{0}" {1} {2} {3};'.format(attribute_name,
+                    print('BA_ {0} {1} {2} {3};'.format(attribute_name,
                                                           value['signature'],
                                                           value['node_name'],
                                                           value['attribute_value']), file=f)
                 elif value['signature'] == 'BO_':
-                    print('BA_ "{0}" {1} {2} {3};'.format(attribute_name,
+                    print('BA_ {0} {1} {2} {3};'.format(attribute_name,
                                                           value['signature'],
                                                           value['message_id'],
                                                           value['attribute_value']), file=f)
                 elif value['signature'] == 'SG_':
-                    print('BA_ "{0}" {1} {2} {3} {4};'.format(attribute_name,
+                    print('BA_ {0} {1} {2} {3} {4};'.format(attribute_name,
                                                               value['signature'],
                                                               value['message_id'],
                                                               value['signal_name'],
                                                               value['attribute_value']), file=f)
                 elif value['signature'] == 'EV_':
-                    print('BA_ "{0}" {1} {2} {3};'.format(attribute_name,
+                    print('BA_ {0} {1} {2} {3};'.format(attribute_name,
                                                           value['signature'],
                                                           value['env_var_name'],
                                                           value['attribute_value']), file=f)
@@ -610,7 +627,7 @@ if __name__ == '__main__':
     # 사용법
     # # dbc = fileDBC(u'./sample/20190212_AI3_2019_바디_1.4(고속).dbc', encoding='euc-kr')
     # dbc = fileDBC(u'sample/20201224_SU2r_2021_Body(고속)_v0.5_R1.dbc', encoding='euc-kr')
-    f = 'd.dbc'
+    # f = 'd.dbc'
     # dbc = fileDBC(f, 'euc-kr')
     # dbc.duplicate()
     # exit(0)

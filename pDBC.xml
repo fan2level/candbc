@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <pDBC>
-  <file name="" />
+  <file name="[file-name]" />
   <nodes>
-    <node name=""/>
+    <node name="[node-name]"/>
   </nodes>
 
   <messages>
-    <message id="" name="" size="" transmitter="[node]">
+    <message id="" name="" size="" tx="[node-name]">
       <signal name=""/>
     </message>
   </messages>
 
   <signals>
-    <signal name="" size="" receiver="[node]">
+    <signal name="[signal-name]" size="[signal-size]">
+      <rx name="[node-name"/>
       <i multiplexer=""/>
       <i startbit=""/>
       <i byteorder=""/>

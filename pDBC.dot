@@ -1,0 +1,30 @@
+﻿
+digraph dbc{
+    node[shape=box]
+    edge[arrowhead=none minlen=0.5]
+    rankdir=LR
+    
+    version
+    new_symbols
+    bit_timing[style=filled fillcolor=gray]
+    nodes
+    value_tables
+    messages
+    message_transmitters
+    environment_variables
+    environment_variables_data
+    signal_types
+    attribute_definitions
+    sigtype_attr_list
+    attribute_defaults
+    attribute_values
+    value_descriptions
+    category_definitions[style=filled fillcolor=gray]
+    categories[style=filled fillcolor=gray]
+    filter[style=filled fillcolor=gray]
+    signal_type_refs
+    signal_groups
+    signal_extended_value_type_list
+
+    version -> new_symbols -> bit_timing -> nodes -> value_tables -> messages -> message_transmitters -> environment_variables -> environment_variables_data -> signal_types -> attribute_definitions -> sigtype_attr_list -> attribute_defaults -> attribute_values -> value_descriptions -> category_definitions -> categories -> filter -> signal_type_refs -> signal_groups -> signal_extended_value_type_list
+}

@@ -1,0 +1,26 @@
+#+STARTUP: content
+* file dbc format
+** version
+   ['VERSION' '"' { CANdb_version_string } '"'];
+** new_symbols
+** bit_timing													   :obsolete:
+** nodes
+** value_tables
+** messages
+* file dbc rule
+** = 
+** ; terminate definition
+** | alternative
+** [...] 0 or 1
+** {...} 0 or >
+** (...) group
+** (*...*) comment
+* GD
+  + [ ] unsigned_integer: an unsigned integer
+  + [ ] signed_integer: a signed integer
+  + [ ] double: a double precision float number
+  + [ ]char_string: an arbitrary string consisting of any pritable characters except double hyphens ('"')
+  + [ ] C_identifier: a valid C_identifier.
+	C_identifiers have to start with an alpha characters
+	or an underscore and may further consist of alpha-numeric characters and underscores.
+	C_identifier = (alpha_char | '_') {alpha_num_char | '_'}

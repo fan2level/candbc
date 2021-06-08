@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pDBC>
+  <file name="" />
+  <nodes>
+    <node name=""/>
+  </nodes>
+
+  <messages>
+    <message id="" name="" size="" transmitter="[node]">
+      <signal name=""/>
+    </message>
+  </messages>
+
+  <signals>
+    <signal name="" size="" receiver="[node]">
+      <i multiplexer=""/>
+      <i startbit=""/>
+      <i byteorder=""/>
+      <i valuetype=""/>
+      <i factor=""/>
+      <i offset=""/>
+      <i minimum=""/>
+      <i maximum=""/>
+      <i unit=""/>
+    </signal>
+  </signals>
+</pDBC>

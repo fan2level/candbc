@@ -23,6 +23,9 @@
       <i minimum=""/>
       <i maximum=""/>
       <i unit=""/>
+      <values>
+	<i a="[value]" b="[description]"/>
+      </values>
     </signal>
   </signals>
 </pDBC>

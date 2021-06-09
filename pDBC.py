@@ -367,7 +367,7 @@ class pDBC(object):
         self.__value_descriptions = list()
         # value_descriptions = { value_descriptions_for_signal | value_descriptions_for_env_var } ;
         # value_descriptions_for_signal = 'VAL_' message_id signal_name { value_description } ';' ;
-        pattern_value_descriptions = re.compile('(?P<value_descriptions0>VAL_) (?P<message_id>\w+) (?P<signal_name>\w+) (?P<value_description>.*) ;')
+        pattern_value_descriptions = re.compile('(?P<value_descriptions0>VAL_)\s+(?P<message_id>\d+)\s+(?P<signal_name>\w+)\s+(?P<value_description>.*)\s*;')
         for matchobj in pattern_value_descriptions.finditer(self.contents):
             value_descriptions = matchobj.group('value_descriptions0')
             message_id = matchobj.group('message_id')
@@ -629,7 +629,7 @@ class pDBC(object):
 
             print(file=f)
             
-    def toXml(self, output=None):
+    def toXml(self, output=None, debug=False):
         if output is None:
             filename = os.path.basename(self.__file)
             output = self.__file + '.validate.xml'
@@ -662,9 +662,18 @@ class pDBC(object):
                 xmlsignal.set('name', signal['name'])
                 xmlsignal.set('size', signal['size'])
                 for rx in signal['receivers']:
-                    # xmlsignal.set('rx', signal['receivers'])
                     xmlrx = SubElement(xmlsignal, "rx")
                     xmlrx.set('name', rx)
+                pattern_values = re.compile(u'(\d+)\s+\"(.+?)\"')
+                value = next((x for x in self.value_descriptions if x['signal_name'] == signal['name']), None)
+                if value is not None:
+                    xmlvalues = Element("values")
+                    for m in pattern_values.finditer(value['value_description']):
+                        xmli = SubElement(xmlvalues, "i")
+                        xmli.set('a', m.group(1))
+                        xmli.set('b', m.group(2))
+                    if xmlvalues.find("i") is not None:
+                        xmlsignal.append(xmlvalues)
             xmlsignal0s = xmlmessage.findall('signal')
             if xmlsignal0s:
                 xmlsignal0s[:] = sorted(xmlsignal0s, key=lambda x: (x.tag, x.get('name')))
@@ -672,7 +681,7 @@ class pDBC(object):
         xmlsignals[:] = sorted(xmlsignals, key=lambda x: (x.tag, x.get('name')))
         self.apply_indent(xmlpdbc)
 
-        if self.__debug:
+        if debug:
             tree = ElementTree(xmlpdbc)
             with open(output, mode='wb') as f:
                 tree.write(f, encoding='utf-8', xml_declaration=True)
@@ -696,10 +705,16 @@ class pDBC(object):
     
 if __name__ == '__main__':
     # 사용법
-    f = 'x.dbc'
-    dbc = pDBC(f, debug=True)
-    xmlpdbc = dbc.toXml()
-    exit(0)
+    # f = '1.dbc'
+    # dbc = pDBC(f, debug=True)
+    # dbc.duplicate()
+    # pattern_values = re.compile(u'(\d+)\s+\"(.+?)\"')
+    # for value in dbc.value_descriptions:
+    #     print(f"{value['signal_name']}")
+    #     for m in pattern_values.finditer(value['value_description']):
+    #         print(f"  {m.groups()}")
+    # xmlpdbc = dbc.toXml(debug=True)
+    # exit(0)
     
     os.makedirs('duplicate', exist_ok=True)
     for folder, sub, files in os.walk('./sample'):

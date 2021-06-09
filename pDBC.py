@@ -137,18 +137,18 @@ class pDBC(object):
                 receivers = receiver.split(',')
 
                 # print('{0} {1} : {2}|{3}@{4}{5} ({6},{7}) [{8}|{9}] "{10}" {11}'.format(signal_name, multiplexer_indicator, start_bit, signal_size, byte_order, value_type, factor, offset, minimum, maximum, unit, receiver))
-                signal0 = {'signal_name':signal_name,
+                signal0 = {'name':signal_name,
                            'multiplexer_indicator':multiplexer_indicator,
                            'start_bit':start_bit,
-                           'signal_size':signal_size,
+                           'size':signal_size,
                            'byte_order':byte_order,
                            'value_type':value_type,
                            'factor':factor, 'offset':offset,
                            'minimum':minimum, 'maximum':maximum,
                            'unit':unit,
-                           'receiver':receivers}
+                           'receivers':receivers}
                 signalx.append(signal0)
-            message = {'message_id':message_id, 'message_name':message_name, 'message_size':message_size, 'transmitter':transmitter, 'signal':signalx}
+            message = {'message_id':message_id, 'message_name':message_name, 'message_size':message_size, 'transmitter':transmitter, 'signals':signalx}
             self.__messages.append(message)
 
         self.__message_transmitters = None
@@ -516,11 +516,11 @@ class pDBC(object):
                                                     message['message_name'],
                                                     message['message_size'],
                                                     message['transmitter']), file=f)
-                for signal in message['signal']:
+                for signal in message['signals']:
                     if signal['multiplexer_indicator'] == '':
-                        print(' SG_ {0} : {1}|{2}@{3}{4} ({5},{6}) [{7}|{8}] "{9}"  {10}'.format(signal['signal_name'],
+                        print(' SG_ {0} : {1}|{2}@{3}{4} ({5},{6}) [{7}|{8}] "{9}"  {10}'.format(signal['name'],
                                                                                                  signal['start_bit'],
-                                                                                                 signal['signal_size'],
+                                                                                                 signal['size'],
                                                                                                  signal['byte_order'],
                                                                                                  signal['value_type'],
                                                                                                  signal['factor'],
@@ -528,12 +528,12 @@ class pDBC(object):
                                                                                                  signal['minimum'],
                                                                                                  signal['maximum'],
                                                                                                  signal['unit'],
-                                                                                                 ','.join(signal['receiver'])), file=f)
+                                                                                                 ','.join(signal['receivers'])), file=f)
                     else:
-                        print(' SG_ {0} {1} : {2}|{3}@{4}{5} ({6},{7}) [{8}|{9}] "{10}"  {11}'.format(signal['signal_name'],
+                        print(' SG_ {0} {1} : {2}|{3}@{4}{5} ({6},{7}) [{8}|{9}] "{10}"  {11}'.format(signal['name'],
                                                                                                       signal['multiplexer_indicator'],
                                                                                                       signal['start_bit'],
-                                                                                                      signal['signal_size'],
+                                                                                                      signal['size'],
                                                                                                       signal['byte_order'],
                                                                                                       signal['value_type'],
                                                                                                       signal['factor'],
@@ -541,7 +541,7 @@ class pDBC(object):
                                                                                                       signal['minimum'],
                                                                                                       signal['maximum'],
                                                                                                       signal['unit'],
-                                                                                                      ','.join(signal['receiver'])), file=f)
+                                                                                                      ','.join(signal['receivers'])), file=f)
                 print(file=f)
             print(file=f)
             print(file=f)
@@ -653,16 +653,16 @@ class pDBC(object):
             xmlmessage.set('id', message['message_id'])
             xmlmessage.set('tx', message['transmitter'])
             # signals
-            for signal in message['signal']:
+            for signal in message['signals']:
                 xmlsignal0 = Element("signal")
-                xmlsignal0.set('name', signal['signal_name'])
+                xmlsignal0.set('name', signal['name'])
                 xmlmessage.append(xmlsignal0)
                 
                 xmlsignal = SubElement(xmlsignals, "signal")
-                xmlsignal.set('name', signal['signal_name'])
-                xmlsignal.set('size', signal['signal_size'])
-                for rx in signal['receiver']:
-                    # xmlsignal.set('rx', signal['receiver'])
+                xmlsignal.set('name', signal['name'])
+                xmlsignal.set('size', signal['size'])
+                for rx in signal['receivers']:
+                    # xmlsignal.set('rx', signal['receivers'])
                     xmlrx = SubElement(xmlsignal, "rx")
                     xmlrx.set('name', rx)
             xmlsignal0s = xmlmessage.findall('signal')

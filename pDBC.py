@@ -664,9 +664,9 @@ class pDBC(object):
                 for rx in signal['receivers']:
                     xmlrx = SubElement(xmlsignal, "rx")
                     xmlrx.set('name', rx)
-                pattern_values = re.compile(u'(\d+)\s+\"(.+?)\"')
                 value = next((x for x in self.value_descriptions if x['signal_name'] == signal['name']), None)
                 if value is not None:
+                    pattern_values = re.compile(u'(\d+)\s+\"(.+?)\"')
                     xmlvalues = Element("values")
                     for m in pattern_values.finditer(value['value_description']):
                         xmli = SubElement(xmlvalues, "i")

@@ -41,16 +41,18 @@ class pDBC(object):
         if os.path.exists(filedbc) == False:
             raise('{0} is not exist'.format(filedbc))
 
-        if encoding in {'utf-8', 'euc-kr'}:
+        encodinglist = ['utf-8', 'euc-kr', 'raise-exception']
+        if encoding not in encodinglist:
+            encodinglist.insert(0, encoding)
+        for coding in encodinglist:
+            if coding == 'raise-exception':
+                raise UnicodeError('check encoding')
             try:
-                with open(filedbc, 'r', encoding=encoding) as d:
+                with open(filedbc, 'r', encoding=coding) as d:
                     self.__contents = d.read()
+                break
             except UnicodeDecodeError as e:
-                with open(filedbc, 'r', encoding='euc-kr') as d:
-                    self.__contents = d.read()
-        else:
-            with open(filedbc, 'r', encoding=encoding) as d:
-                self.__contents = d.read()
+                print('[exception]: {0}'.format(e))
 
         self.__version = ''
         # version = ['VERSION' '"' { CANdb_version_string } '"' ];
@@ -679,6 +681,7 @@ class pDBC(object):
             xmlmessage = SubElement(xmlmessages, "message")
             xmlmessage.set('name', message['message_name'])
             xmlmessage.set('id', message['message_id'])
+            xmlmessage.set('size', message['message_size'])
             xmlmessage.set('tx', message['transmitter'])
             # signals
             for signal in message['signals']:
@@ -689,9 +692,11 @@ class pDBC(object):
                 xmlsignal = SubElement(xmlsignals, "signal")
                 xmlsignal.set('name', signal['name'])
                 xmlsignal.set('size', signal['size'])
+                # nodes
                 for rx in signal['receivers']:
                     xmlrx = SubElement(xmlsignal, "rx")
                     xmlrx.set('name', rx)
+                # values
                 value = next((x for x in self.value_descriptions if x['signal_name'] == signal['name']), None)
                 if value is not None:
                     pattern_values = re.compile(u'(\d+)\s+\"(.+?)\"')
@@ -733,23 +738,17 @@ class pDBC(object):
     
 if __name__ == '__main__':
     # 사용법
-    # f = '1.dbc'
-    # dbc = pDBC(f, debug=True)
-    # dbc.duplicate()
-    # pattern_values = re.compile(u'(\d+)\s+\"(.+?)\"')
-    # for value in dbc.value_descriptions:
-    #     print(f"{value['signal_name']}")
-    #     for m in pattern_values.finditer(value['value_description']):
-    #         print(f"  {m.groups()}")
-    # xmlpdbc = dbc.toXml(debug=True)
-    # exit(0)
+    f = '1.dbc'
+    dbc = pDBC(f, debug=True)
+    xmlpdbc = dbc.toXml(debug=True)
+    exit(0)
     
-    os.makedirs('duplicate', exist_ok=True)
-    for folder, sub, files in os.walk('./sample'):
-        for file in files:
-            i = os.path.join(folder, file)
-            print('file: {0}'.format(i))
-            dbc = pDBC(i)
-            dbc.duplicate(output=os.path.join('duplicate', file))
+    # os.makedirs('duplicate', exist_ok=True)
+    # for folder, sub, files in os.walk('./sample'):
+    #     for file in files:
+    #         i = os.path.join(folder, file)
+    #         print('file: {0}'.format(i))
+    #         dbc = pDBC(i)
+    #         dbc.duplicate(output=os.path.join('duplicate', file))
     
     print('done')

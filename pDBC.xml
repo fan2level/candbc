@@ -4,23 +4,22 @@
   <nodes>
     <node name="[node-name]">
       <tx>
-	<message/>
+	<message id="[message-id]" />
       </tx>
       <rx>
-	<message/>
+	<message id="[message-id]" />
       </rx>
     </node>
   </nodes>
 
   <messages>
-    <message id="" name="" size="" tx="[node-name]">
+    <message id="[message-id]" name="[message-name]" size="[message-size]" tx="[node-name]">
       <signal name=""/>
     </message>
   </messages>
 
   <signals>
     <signal name="[signal-name]" size="[signal-size]">
-      <rx name="[node-name"/>
       <i multiplexer=""/>
       <i startbit=""/>
       <i byteorder=""/>
@@ -30,6 +29,9 @@
       <i minimum=""/>
       <i maximum=""/>
       <i unit=""/>
+      <nodes>
+	<rx name="[node-name]"/>
+      </nodes>
       <values>
 	<i a="[value]" b="[description]"/>
       </values>

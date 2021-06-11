@@ -643,6 +643,34 @@ class pDBC(object):
         for node in self.nodes:
             xmlnode = SubElement(xmlnodes, "node")
             xmlnode.set('name', node)
+
+            # tx messages
+            xmltx = Element("tx")
+            messages_tx = [x for x in self.messages if x['transmitter'] == node]
+            for message in messages_tx:
+                if next((x for x in xmltx.findall('message') if x.get('id') == message['message_id']), None) is not None:
+                    continue
+                xmlmessage = SubElement(xmltx, "message")
+                xmlmessage.set('name', message['message_name'])
+                xmlmessage.set('id', message['message_id'])
+            if len(list(xmltx)) > 0:
+                xmltx[:] = sorted(xmltx, key=lambda x: (x.tag, x.get('name')))
+                xmlnode.append(xmltx)
+            # rx messages
+            xmlrx = Element("rx")
+            for message in self.messages:
+                for signal in message['signals']:
+                    receiver = next((x for x in signal['receivers'] if x == node), None)
+                    if receiver is not None:
+                        if next((x for x in xmlrx.findall('message') if x.get('id') == message['message_id']), None) is not None:
+                            continue
+                        xmlmessage = SubElement(xmlrx, "message")
+                        xmlmessage.set('name', message['message_name'])
+                        xmlmessage.set('id', message['message_id'])
+            if len(list(xmlrx)) > 0:
+                xmlrx[:] = sorted(xmlrx, key=lambda x: (x.tag, x.get('name')))
+                xmlnode.append(xmlrx)
+
         xmlnodes[:] = sorted(xmlnodes, key=lambda x: (x.tag, x.get('name')))
         # messages
         xmlmessages = SubElement(xmlpdbc, "messages")

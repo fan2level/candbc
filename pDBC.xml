@@ -2,7 +2,14 @@
 <pDBC>
   <file name="[file-name]" />
   <nodes>
-    <node name="[node-name]"/>
+    <node name="[node-name]">
+      <tx>
+	<message/>
+      </tx>
+      <rx>
+	<message/>
+      </rx>
+    </node>
   </nodes>
 
   <messages>

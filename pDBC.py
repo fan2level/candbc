@@ -95,14 +95,14 @@ class pDBC(object):
         # messages = {message} ;
         # message = BO_ message_id message_name ':' message_size transmitter {signal} ;
         # message_id = unsigned_integer ;
-        pattern_messages = re.compile('(?P<messages0>BO_) (?P<message_id>\d+) (?P<message_name>\w+): (?P<message_size>\d+) (?P<transmitter>\w+)\s+(?P<signal>SG_ .+?\n\n)', re.M|re.S)
-        for matchobj in pattern_messages.finditer(self.contents):
-            messages = matchobj.group('messages0')
-            message_id = matchobj.group('message_id')
-            message_name = matchobj.group('message_name')
-            message_size = matchobj.group('message_size')
-            transmitter = matchobj.group('transmitter')
-            signal = matchobj.group('signal')
+        p0 = re.compile(u"(BO_)\s+(\d+)\s+(\w+)\s*:\s*(\d+)\s+(\w+).*?", re.M|re.S)
+        for m in p0.finditer(self.contents):
+            messages = m.group(1)
+            message_id = m.group(2)
+            message_name = m.group(3)
+            message_size = m.group(4)
+            transmitter = m.group(5)
+            # signal = m.group(6)
             signalx = list()
 
             # signal = 'SG_' signal_name multiplexer_indicator ':' start_bit '|' signal_size '@' byte_order value_type '(' factor ',' offset ')' '[' minimum '|' maximum ']' unit receiver {',' receiver} ;
@@ -121,21 +121,28 @@ class pDBC(object):
             # maximum = double ;
             # unit = char_string ;
             # receiver = node_name | 'Vector__XXX' ;
-            pattern_signal = re.compile('SG_ (?P<signal_name>[\w]+)\s+(?P<multiplexer_indicator>''|M|m\d?)\s*:\s*(?P<start_bit>\d+)\|(?P<signal_size>\d+)@(?P<byte_order>[01])(?P<value_type>[+-])\s+\((?P<factor_offset>.+)\)\s+\[(?P<minimum_maximum>.+)\]\s+\"(?P<unit>.*)\"\s+(?P<receiver>[\w,]+)', re.M)
-            # m = pattern_signal.match(signal)
-            for m in pattern_signal.finditer(signal):
-                signal_name = m.group('signal_name')
-                multiplexer_indicator = m.group('multiplexer_indicator')
-                start_bit = m.group('start_bit')
-                signal_size = m.group('signal_size')
-                byte_order = m.group('byte_order')
-                value_type = m.group('value_type')
-                factor_offset = m.group('factor_offset')
+
+            offset_s,offset_e = m.span()
+            signal = self.contents[offset_e:]
+            x = re.search('BO_', signal)
+            if x:
+                signal = signal[:x.span()[0]]
+                p1 = re.compile(u"(?:SG_)\s+(\w+)(\s*|\s*M|\s*m\d?)\s*:\s*(\d+)\|(\d+)@([01])([+-])\s+\((.+?)\)\s+\[(.+?)\]\s+\"(.*?)\"\s+([\w,]+)", re.M|re.S)
+            for n in p1.finditer(signal):
+                signal_name = n.group(1)
+                multiplexer_indicator = n.group(2)
+                if multiplexer_indicator is not None:
+                    multiplexer_indicator = multiplexer_indicator.strip()
+                start_bit = n.group(3)
+                signal_size = n.group(4)
+                byte_order = n.group(5)
+                value_type = n.group(6)
+                factor_offset = n.group(7)
                 factor, offset = factor_offset.split(',')
-                minimum_maximum = m.group('minimum_maximum') # fixme:
-                minimum, maximum = minimum_maximum.split('|')
-                unit = m.group('unit')
-                receiver = m.group('receiver')
+                minmax = n.group(8)
+                minimum, maximum = minmax.split('|')
+                unit = n.group(9)
+                receiver = n.group(10)
                 receivers = receiver.split(',')
 
                 # print('{0} {1} : {2}|{3}@{4}{5} ({6},{7}) [{8}|{9}] "{10}" {11}'.format(signal_name, multiplexer_indicator, start_bit, signal_size, byte_order, value_type, factor, offset, minimum, maximum, unit, receiver))
@@ -740,7 +747,7 @@ if __name__ == '__main__':
     # 사용법
     f = '1.dbc'
     dbc = pDBC(f, debug=True)
-    xmlpdbc = dbc.toXml(debug=True)
+    dbc.duplicate()
     exit(0)
     
     # os.makedirs('duplicate', exist_ok=True)

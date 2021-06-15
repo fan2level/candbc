@@ -41,6 +41,8 @@ class pDBC(object):
         if os.path.exists(filedbc) == False:
             raise('{0} is not exist'.format(filedbc))
 
+        if debug: print("file: {0}".format(filedbc))
+        
         encodinglist = ['utf-8', 'euc-kr', 'raise-exception']
         if encoding not in encodinglist:
             encodinglist.insert(0, encoding)
@@ -52,7 +54,7 @@ class pDBC(object):
                     self.__contents = d.read()
                 break
             except UnicodeDecodeError as e:
-                print('[exception]: {0}'.format(e))
+                if debug: print('[exception]: {0}'.format(e))
 
         self.__version = ''
         # version = ['VERSION' '"' { CANdb_version_string } '"' ];
@@ -185,11 +187,9 @@ class pDBC(object):
         pattern_comments0 = re.compile('^CM_\s+(?P<comment>.*?\")\s*;', re.S|re.M)
         for m in pattern_comments0.finditer(self.contents):
             comment = m.group('comment')
-            # print('<<', comment, '>>')
             pattern_comments = re.compile('((BU_)\s+(\w+)|(BO_)\s+(\d+)|(SG_)\s+(\d+)\s+(\w+)|(EV_)\s+(\w+))\s+(?P<char_string>\".*\")', re.S)
             n = pattern_comments.match(comment)
             if n:
-                # print('  matched  ', n.group(2), n.group(3), n.group(4))
                 signature = None
                 node_name = None
                 message_id = None
@@ -499,6 +499,14 @@ class pDBC(object):
     def signal_extended_value_type_list(self):
         return self.__signal_extended_value_type_list
 
+    def validate(self):
+        """todo: validate can.dbc file compatibility
+        """
+        # nodes
+        # messages
+        # signals
+        pass
+    
     def duplicate(self, output=None):
         """ duplicate dbc file using parsed data
         """
@@ -753,8 +761,9 @@ if __name__ == '__main__':
     # os.makedirs('duplicate', exist_ok=True)
     # for folder, sub, files in os.walk('./sample'):
     #     for file in files:
+    #         if file.endswith('.dbc') == False:
+    #             continue
     #         i = os.path.join(folder, file)
-    #         print('file: {0}'.format(i))
     #         dbc = pDBC(i)
     #         dbc.duplicate(output=os.path.join('duplicate', file))
     

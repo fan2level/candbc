@@ -665,18 +665,19 @@ class pDBC(object):
             output = self.__file + '.validate.json'
 
         pyo = dict()
+        pyo['file'] = filename
         pyo['version'] = self.version
-        pyo['nodes'] = [{'name':x} for x in self.nodes]
+        pyo['nodes'] = [x for x in self.nodes]
         pyo['messages'] = [{'name':x['message_name'],
                             'id':x['message_id'],
                             'size':x['message_size'],
                             'transmitter':x['transmitter'],
-                            'signals':[{'name':y['name']} for y in x['signals']]}
+                            'signals':[y['name'] for y in x['signals']]}
                            for x in self.messages]
         pyo['signals'] = list()
         for message in self.messages:
             for signal in message['signals']:
-                signalp = {'name':signal['name'], 'size':signal['name']} # todo:
+                signalp = {'name':signal['name'], 'size':signal['size']} # todo:
                 pyo['signals'].append(signalp)
                 r = [x for x in signal['receivers']]
                 if len(r) > 0:
@@ -687,7 +688,7 @@ class pDBC(object):
                     pattern_values = re.compile(u'(\d+)\s+\"(.+?)\"')
                     valuesp = list()
                     for m in pattern_values.finditer(value['value_description']):
-                        valuesp.append({'value':m.group(1), 'description':m.group(2)})
+                        valuesp.append({'a':m.group(1), 'b':m.group(2)})
                     if len(valuesp) > 0:
                         signalp['values'] = valuesp
 
@@ -713,32 +714,32 @@ class pDBC(object):
             xmlnode = SubElement(xmlnodes, "node")
             xmlnode.set('name', node)
 
-            # tx messages
-            xmltx = Element("tx")
-            messages_tx = [x for x in self.messages if x['transmitter'] == node]
-            for message in messages_tx:
-                if next((x for x in xmltx.findall('message') if x.get('id') == message['message_id']), None) is not None:
-                    continue
-                xmlmessage = SubElement(xmltx, "message")
-                xmlmessage.set('name', message['message_name'])
-                xmlmessage.set('id', message['message_id'])
-            if len(list(xmltx)) > 0:
-                xmltx[:] = sorted(xmltx, key=lambda x: (x.tag, x.get('name')))
-                xmlnode.append(xmltx)
-            # rx messages
-            xmlrx = Element("rx")
-            for message in self.messages:
-                for signal in message['signals']:
-                    receiver = next((x for x in signal['receivers'] if x == node), None)
-                    if receiver is not None:
-                        if next((x for x in xmlrx.findall('message') if x.get('id') == message['message_id']), None) is not None:
-                            continue
-                        xmlmessage = SubElement(xmlrx, "message")
-                        xmlmessage.set('name', message['message_name'])
-                        xmlmessage.set('id', message['message_id'])
-            if len(list(xmlrx)) > 0:
-                xmlrx[:] = sorted(xmlrx, key=lambda x: (x.tag, x.get('name')))
-                xmlnode.append(xmlrx)
+            # # tx messages
+            # xmltx = Element("tx")
+            # messages_tx = [x for x in self.messages if x['transmitter'] == node]
+            # for message in messages_tx:
+            #     if next((x for x in xmltx.findall('message') if x.get('id') == message['message_id']), None) is not None:
+            #         continue
+            #     xmlmessage = SubElement(xmltx, "message")
+            #     xmlmessage.set('name', message['message_name'])
+            #     xmlmessage.set('id', message['message_id'])
+            # if len(list(xmltx)) > 0:
+            #     xmltx[:] = sorted(xmltx, key=lambda x: (x.tag, x.get('name')))
+            #     xmlnode.append(xmltx)
+            # # rx messages
+            # xmlrx = Element("rx")
+            # for message in self.messages:
+            #     for signal in message['signals']:
+            #         receiver = next((x for x in signal['receivers'] if x == node), None)
+            #         if receiver is not None:
+            #             if next((x for x in xmlrx.findall('message') if x.get('id') == message['message_id']), None) is not None:
+            #                 continue
+            #             xmlmessage = SubElement(xmlrx, "message")
+            #             xmlmessage.set('name', message['message_name'])
+            #             xmlmessage.set('id', message['message_id'])
+            # if len(list(xmlrx)) > 0:
+            #     xmlrx[:] = sorted(xmlrx, key=lambda x: (x.tag, x.get('name')))
+            #     xmlnode.append(xmlrx)
 
         xmlnodes[:] = sorted(xmlnodes, key=lambda x: (x.tag, x.get('name')))
         # messages
@@ -749,7 +750,7 @@ class pDBC(object):
             xmlmessage.set('name', message['message_name'])
             xmlmessage.set('id', message['message_id'])
             xmlmessage.set('size', message['message_size'])
-            xmlmessage.set('tx', message['transmitter'])
+            xmlmessage.set('transmitter', message['transmitter'])
             # signals
             for signal in message['signals']:
                 xmlsignal0 = Element("signal")
@@ -760,9 +761,13 @@ class pDBC(object):
                 xmlsignal.set('name', signal['name'])
                 xmlsignal.set('size', signal['size'])
                 # nodes
-                for rx in signal['receivers']:
-                    xmlrx = SubElement(xmlsignal, "rx")
-                    xmlrx.set('name', rx)
+                xmlreceivers = Element("receivers")
+                for receiver in signal['receivers']:
+                    xmli = SubElement(xmlreceivers, "i")
+                    xmli.set('name', receiver)
+                if xmlreceivers.find('i') is not None:
+                    xmlreceivers[:] = sorted(xmlreceivers, key=lambda x: (x.tag, x.get('name')))
+                    xmlsignal.append(xmlreceivers)
                 # values
                 value = next((x for x in self.value_descriptions if x['signal_name'] == signal['name']), None)
                 if value is not None:
@@ -805,9 +810,32 @@ class pDBC(object):
     
 if __name__ == '__main__':
     # 사용법
-    f = '1.dbc'
+    f = 'aa.dbc'
     dbc = pDBC(f, debug=True)
-    dbc.duplicate()
+    dbc.toXml(debug=True)
+    # dbc.duplicate()
+    # j = dbc.toJson(debug=True)
+    # p = json.loads(j)
+    # print(f"version:{p['version']}")
+    # print(f"nodes")
+    # for node in p['nodes']:
+    #     print(f"  {node['name']}")
+    # print(f"messages")
+    # for message in p['messages']:
+    #     print(f"  {message['name']} {message['size']} {message['transmitter']}")
+    #     for signal in message['signals']:
+    #         print(f"    {signal['name']}")
+    # print(f"signals")
+    # for signal in p['signals']:
+    #     print(f"  {signal['name']} {signal['size']}")
+    #     print(f"    receivers")
+    #     if 'receivers' in signal:
+    #         for receiver in signal['receivers']:
+    #             print(f"      {receiver}")
+    #     if 'values' in signal:
+    #         print(f"    values")
+    #         for value in signal['values']:
+    #             print(f"      {value['a']} {value['b']}")
     exit(0)
     
     # os.makedirs('duplicate', exist_ok=True)

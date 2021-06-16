@@ -4,6 +4,7 @@ import os
 import sys
 import re
 from xml.etree.ElementTree import *
+import json
 
 class pDBC(object):
     """ .dbc file format
@@ -502,10 +503,20 @@ class pDBC(object):
     def validate(self):
         """todo: validate can.dbc file compatibility
         """
-        # nodes
-        # messages
-        # signals
-        pass
+        # # nodes
+        # nodes = set()
+        # for message in self.messages:
+        #     nodes.add(message['transmitter'])
+        #     for signal in message['signals']:
+        #         nodes.update(signal['receivers'])
+        # print(f"nodes...")
+        # if len(nodes.symmetric_difference(self.nodes)) > 0:
+        #     print(f"  {nodes.symmetric_difference(self.nodes)}")
+        # else:
+        #     print(f"  done")
+        # # messages
+        # # signals
+        # print('done')
     
     def duplicate(self, output=None):
         """ duplicate dbc file using parsed data
@@ -645,8 +656,49 @@ class pDBC(object):
                                                   value_description['value_description']), file=f)
 
             print(file=f)
-            
+
+    def toJson(self, output=None, debug=False):
+        ''' return json format object
+        '''
+        if output is None:
+            filename = os.path.basename(self.__file)
+            output = self.__file + '.validate.json'
+
+        pyo = dict()
+        pyo['version'] = self.version
+        pyo['nodes'] = [{'name':x} for x in self.nodes]
+        pyo['messages'] = [{'name':x['message_name'],
+                            'id':x['message_id'],
+                            'size':x['message_size'],
+                            'transmitter':x['transmitter'],
+                            'signals':[{'name':y['name']} for y in x['signals']]}
+                           for x in self.messages]
+        pyo['signals'] = list()
+        for message in self.messages:
+            for signal in message['signals']:
+                signalp = {'name':signal['name'], 'size':signal['name']} # todo:
+                pyo['signals'].append(signalp)
+                r = [x for x in signal['receivers']]
+                if len(r) > 0:
+                    signalp['receivers'] = r
+
+                value = next((x for x in self.value_descriptions if x['signal_name'] == signal['name']), None)
+                if value is not None:
+                    pattern_values = re.compile(u'(\d+)\s+\"(.+?)\"')
+                    valuesp = list()
+                    for m in pattern_values.finditer(value['value_description']):
+                        valuesp.append({'value':m.group(1), 'description':m.group(2)})
+                    if len(valuesp) > 0:
+                        signalp['values'] = valuesp
+
+        if debug:
+            with open(output, mode='w') as f:
+                json.dump(pyo, f, indent=2)
+        return json.dumps(pyo, indent=2)
+    
     def toXml(self, output=None, debug=False):
+        ''' return xml format object
+        '''
         if output is None:
             filename = os.path.basename(self.__file)
             output = self.__file + '.validate.xml'

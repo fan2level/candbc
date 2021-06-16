@@ -693,9 +693,9 @@ class pDBC(object):
                         signalp['values'] = valuesp
 
         if debug:
-            with open(output, mode='w') as f:
-                json.dump(pyo, f, indent=2)
-        return json.dumps(pyo, indent=2)
+            with open(output, mode='w', encoding='utf-8-sig') as f:
+                f.write(json.dumps(pyo, ensure_ascii=False, indent=2))
+        return json.dumps(pyo, ensure_ascii=False, indent=2)
     
     def toXml(self, output=None, debug=False):
         ''' return xml format object
@@ -811,9 +811,9 @@ class pDBC(object):
 if __name__ == '__main__':
     # 사용법
     f = 'aa.dbc'
-    dbc = pDBC(f, debug=True)
-    dbc.toXml(debug=True)
-    # dbc.duplicate()
+    # dbc = pDBC(f, debug=True)
+    # dbc.toXml(debug=True)
+    # # dbc.duplicate()
     # j = dbc.toJson(debug=True)
     # p = json.loads(j)
     # print(f"version:{p['version']}")
@@ -836,7 +836,7 @@ if __name__ == '__main__':
     #         print(f"    values")
     #         for value in signal['values']:
     #             print(f"      {value['a']} {value['b']}")
-    exit(0)
+    # exit(0)
     
     # os.makedirs('duplicate', exist_ok=True)
     # for folder, sub, files in os.walk('./sample'):

@@ -2,22 +2,13 @@
 <pDBC>
   <file name="[file-name]" />
   <nodes>
-    <node name="[node-name]">
-      <tx>
-	<message id="[message-id]" />
-      </tx>
-      <rx>
-	<message id="[message-id]" />
-      </rx>
-    </node>
+    <node name="[node-name]" />
   </nodes>
-
   <messages>
-    <message id="[message-id]" name="[message-name]" size="[message-size]" tx="[node-name]">
+    <message id="[message-id]" name="[message-name]" size="[message-size]" transmitter="[node-name]">
       <signal name=""/>
     </message>
   </messages>
-
   <signals>
     <signal name="[signal-name]" size="[signal-size]">
       <i multiplexer=""/>
@@ -29,9 +20,9 @@
       <i minimum=""/>
       <i maximum=""/>
       <i unit=""/>
-      <nodes>
-	<rx name="[node-name]"/>
-      </nodes>
+      <receivers>
+	<i name="[node-name]"/>
+      </receivers>
       <values>
 	<i a="[value]" b="[description]"/>
       </values>

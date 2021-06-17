@@ -176,13 +176,8 @@ class pDBC(object):
             self.__message_transmitters.append(message_transmitter)
 
         self.__environment_variables = None
-        # environment_variables
-
         self.__environment_variables_data = None
-        # environment_variables_data
-
         self.__signal_types = None
-        # signal_types
 
         self.__comments = list()
         #ex)CM_ BO_ 137 "[EC] On Event and On Change";
@@ -394,18 +389,10 @@ class pDBC(object):
             self.__value_descriptions.append({'message_id':message_id, 'signal_name':signal_name, 'value_description':value_description})
 
         self.__category_definitions = None
-        # category_definitions (*obsolete*)
-        
         self.__categories = None
-        # categories (*obsolete*)
-
         self.__filters = None
-        # filter (*obsolete*)
-
         self.__signal_type_refs = None
-
         self.__signal_groups = None
-
         self.__signal_extended_value_type_list = None
 
     @property

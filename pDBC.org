@@ -1,12 +1,31 @@
-#+STARTUP: content
-* file dbc format
-** version
-   ['VERSION' '"' { CANdb_version_string } '"'];
-** new_symbols
-** bit_timing													   :obsolete:
-** nodes
-** value_tables
-** messages
+#+STARTUP: showall
+* file dbc format[14/25]
+** DONE VERSION version
+** DONE _NS new symbols
+** DONE bit timing *obsolete*
+** DONE BU_ nodes
+** TODO value tables
+** DONE BO_ messages
+** DONE BO_TX_BU_ message transmitters
+** TODO environment variables
+** TODO environment variables data
+** TODO signal types
+** DONE CM_ comments
+** DONE BA_DEF_ attribute definitions
+** DONE BA_DEF_REL_ attribute definitions 2
+** TODO sigtype attr list
+** DONE BA_DEF_DEF_ attribute defaults
+** DONE BA_DEF_DEF_REL_ 
+** DONE BA_ attribute values
+** DONE BAL_REL_
+** DONE VAL_ value descriptions
+** TODO category_definitions *obsolete*
+** TODO categories *obsolete*
+** TODO filter *obsolete*
+** TODO signal_type_refs
+** TODO signal_groups
+** TODO signal_extended_value_type_list
+
 * file dbc rule
 ** = 
 ** ; terminate definition

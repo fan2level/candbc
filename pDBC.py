@@ -59,10 +59,10 @@ class pDBC(object):
 
         self.__version = ''
         # version = ['VERSION' '"' { CANdb_version_string } '"' ];
-        pattern_version = re.compile('(?P<version0>VERSION) \"(?P<version>\w+)\"')
-        matchobj = pattern_version.search(self.contents)
-        if matchobj is not None:
-            version = matchobj.group('version')
+        p0 = re.compile('(?P<signature>VERSION) \"(?P<version>\w+)\"')
+        m = p0.search(self.contents)
+        if m is not None:
+            version = m.group('version')
             self.__version = version
 
         self.__new_symbols = list()
@@ -73,15 +73,16 @@ class pDBC(object):
         # ['SIG_VALTYPE_'] ['SIGTYPE_VALTYPE_'] ['BO_TX_BU_']
         # ['BA_DEF_REL_'] ['BA_REL_'] ['BA_DEF_DEF_REL_'] ['BU_SG_REL_']
         # ['BU_EV_REL_'] ['BU_BO_REL_'] ];
-        pattern_new_symbols = re.compile('(?P<new_symbols0>NS_)\s*:\s*\n(?P<new_symbols>.*)\nBS_', re.S)
-        matchobj = pattern_new_symbols.search(self.contents)
-        if matchobj is not None:
-            new_symbols = matchobj.group('new_symbols')
+        p1 = re.compile('(?P<signature>NS_)\s*:\s*\n(?P<symbol>.*)\nBS_', re.S)
+        m = p1.search(self.contents)
+        if m is not None:
+            new_symbols = m.group('symbol')
             new_symbols = new_symbols.strip()
             new_symbols = re.sub('\s+', ' ', new_symbols)
             self.__new_symbols = re.split('\s+', new_symbols)
 
         self.__bit_timing = None
+        # BS_:
 
         self.__nodes = list()
         # nodes = 'BU_:' {node_name} ;
@@ -92,7 +93,7 @@ class pDBC(object):
             nodes = matchobj.group('nodes')
             self.__nodes = re.split('\s+', nodes)
 
-        self.__value_tables = list()
+        self.__value_tables = None
             
         self.__messages = list()
         # messages = {message} ;
@@ -163,9 +164,16 @@ class pDBC(object):
             message = {'message_id':message_id, 'message_name':message_name, 'message_size':message_size, 'transmitter':transmitter, 'signals':signalx}
             self.__messages.append(message)
 
-        self.__message_transmitters = None
+        self.__message_transmitters = list()
         # message_transmitters = {message_transmitter} ;
         # Message_transmitter = 'BO_TX_BU_' message_id ':' {transmitter} ';' ;
+        # transmitter = node_name | 'Vector__XXX'
+        p0 = re.compile(u"(BO_TX_BU_)\s+(\w+)\s*:\s*([\w,]+)\s*;\s*", re.M|re.S)
+        for m in p0.finditer(self.contents):
+            message_transmitter = {'signature':m.group(1),
+                                   'message_id':m.group(2),
+                                   'nodes':m.group(3)}
+            self.__message_transmitters.append(message_transmitter)
 
         self.__environment_variables = None
         # environment_variables
@@ -573,6 +581,13 @@ class pDBC(object):
                 print(file=f)
             print(file=f)
             print(file=f)
+
+            for message_transmitter in self.message_transmitters:
+                signature = message_transmitter['signature']
+                message_id = message_transmitter['message_id']
+                nodes = message_transmitter['nodes']
+                print(f"{signature} {message_id} {nodes}", file=f)
+            print(file=f)
             
             for comment in self.comments:
                 signature = comment['signature']
@@ -590,10 +605,10 @@ class pDBC(object):
                     
             for attribute_definition in self.attribute_definitions:
                 if attribute_definition['object_type'] == '':
-                    print('BA_DEF_  "{0}" {1}'.format(attribute_definition['attribute_name'],
+                    print('BA_DEF_ "{0}" {1}'.format(attribute_definition['attribute_name'],
                                                       attribute_definition['attribute_value_type']), file=f)
                 else:
-                    print('BA_DEF_ {0}  "{1}" {2}'.format(attribute_definition['object_type'],
+                    print('BA_DEF_ {0} "{1}" {2}'.format(attribute_definition['object_type'],
                                                           attribute_definition['attribute_name'],
                                                           attribute_definition['attribute_value_type']), file=f)
             # fixme:BA_DEF_REL_
@@ -813,7 +828,7 @@ if __name__ == '__main__':
     f = 'aa.dbc'
     # dbc = pDBC(f, debug=True)
     # dbc.toXml(debug=True)
-    # # dbc.duplicate()
+    # dbc.duplicate()
     # j = dbc.toJson(debug=True)
     # p = json.loads(j)
     # print(f"version:{p['version']}")

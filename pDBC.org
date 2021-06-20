@@ -1,10 +1,10 @@
 #+STARTUP: showall
-* file dbc format[14/25]
+* file dbc format[15/25]
 ** DONE VERSION version
 ** DONE _NS new symbols
 ** DONE bit timing *obsolete*
 ** DONE BU_ nodes
-** TODO value tables
+** DONE VAL_TABLE_ value tables
 ** DONE BO_ messages
 ** DONE BO_TX_BU_ message transmitters
 ** TODO environment variables

@@ -93,8 +93,16 @@ class pDBC(object):
             nodes = matchobj.group('nodes')
             self.__nodes = re.split('\s+', nodes)
 
-        self.__value_tables = None
-            
+        self.__value_tables = list()
+        # value_tables = {value_table} ;
+        # value_table = 'VAL_TABLE_' value_table_name {value_description} ';' ;
+        # value_table_name = C_identifier
+        p5 = re.compile(u'^(VAL_TABLE_)\s+(\w+)\s+(.*?);', re.M|re.S)
+        for m in p5.finditer(self.contents):
+            self.__value_tables.append({'signature':m.group(1),
+                                        'name':m.group(2),
+                                        'description':m.group(3)})
+
         self.__messages = list()
         # messages = {message} ;
         # message = BO_ message_id message_name ':' message_size transmitter {signal} ;
@@ -416,6 +424,10 @@ class pDBC(object):
         return self.__nodes
 
     @property
+    def value_tables(self):
+        return self.__value_tables
+
+    @property
     def messages(self):
         return self.__messages
 
@@ -533,6 +545,11 @@ class pDBC(object):
             nodes = nodes + ' '.join(self.nodes)
             print(nodes, file=f)
             print(file=f)
+            print(file=f)
+            for value_table in self.value_tables:
+                print('{0} {1} {2};'.format(value_table['signature'],
+                                           value_table['name'],
+                                            value_table['description']), file=f)
             print(file=f)
             for message in self.messages:
                 print('BO_ {0} {1}: {2} {3}'.format(message['message_id'],
@@ -812,8 +829,8 @@ class pDBC(object):
     
 if __name__ == '__main__':
     # 사용법
-    f = 'aa.dbc'
-    # dbc = pDBC(f, debug=True)
+    f = 'sample/abs.dbc'
+    # dbc = pDBC(f)
     # dbc.toXml(debug=True)
     # dbc.duplicate()
     # j = dbc.toJson(debug=True)

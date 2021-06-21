@@ -683,21 +683,34 @@ class pDBC(object):
             filename = os.path.basename(self.__file)
             output = self.__file + '.validate.json'
 
-        pyo = dict()
-        pyo['file'] = filename
-        pyo['version'] = self.version
-        pyo['nodes'] = [x for x in self.nodes]
-        pyo['messages'] = [{'name':x['message_name'],
+        pp = dict()
+        pp['file'] = filename
+        pp['version'] = self.version
+        pp['nodes'] = [x for x in self.nodes]
+        pp['nodes'] = sorted(pp['nodes'], key=lambda x: x)
+        pp['messages'] = [{'name':x['message_name'],
                             'id':x['message_id'],
                             'size':x['message_size'],
                             'transmitter':x['transmitter'],
                             'signals':[y['name'] for y in x['signals']]}
                            for x in self.messages]
-        pyo['signals'] = list()
+        pp['messages'] = sorted(pp['messages'], key=lambda x: x['name'])
+        pp['signals'] = list()
         for message in self.messages:
             for signal in message['signals']:
-                signalp = {'name':signal['name'], 'size':signal['size']} # todo:
-                pyo['signals'].append(signalp)
+                signalp = {'name':signal['name'],
+                           'size':signal['size'],
+                           'm':signal['multiplexer_indicator'] if signal['multiplexer_indicator'] != '' else None,
+                           's':signal['start_bit'],
+                           'b':signal['byte_order'],
+                           'v':signal['value_type'],
+                           'f':signal['factor'],
+                           'o':signal['offset'],
+                           'n':signal['minimum'],
+                           'x':signal['maximum'],
+                           'i':signal['unit']
+                }
+                pp['signals'].append(signalp)
                 r = [x for x in signal['receivers']]
                 if len(r) > 0:
                     signalp['receivers'] = r
@@ -710,11 +723,12 @@ class pDBC(object):
                         valuesp.append({'a':m.group(1), 'b':m.group(2)})
                     if len(valuesp) > 0:
                         signalp['values'] = valuesp
+        pp['signals'] = sorted(pp['signals'], key=lambda x: x['name'])
 
         if debug:
             with open(output, mode='w', encoding='utf-8-sig') as f:
-                f.write(json.dumps(pyo, ensure_ascii=False, indent=2))
-        return json.dumps(pyo, ensure_ascii=False, indent=2)
+                f.write(json.dumps(pp, ensure_ascii=False, indent=2))
+        return json.dumps(pp, ensure_ascii=False, indent=2)
     
     def toXml(self, output=None, debug=False):
         ''' return xml format object
@@ -829,11 +843,11 @@ class pDBC(object):
     
 if __name__ == '__main__':
     # 사용법
-    f = 'sample/abs.dbc'
-    # dbc = pDBC(f)
-    # dbc.toXml(debug=True)
+    f = 'aa.dbc'
+    dbc = pDBC(f)
+    # dbc.toXml()
     # dbc.duplicate()
-    # j = dbc.toJson(debug=True)
+    # j = dbc.toJson()
     # p = json.loads(j)
     # print(f"version:{p['version']}")
     # print(f"nodes")

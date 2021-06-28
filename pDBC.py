@@ -50,6 +50,11 @@ class pDBC(object):
         for coding in encodinglist:
             if coding == 'raise-exception':
                 raise UnicodeError(f'check encoding: {filedbc}')
+                #checkme: new line
+                # with open(filedbc, 'rb') as d:
+                #     xx = d.read()
+                #     self.__contents = "".join([chr(x) for x in xx if x < 127 and x != 0x0d])
+                # break
             try:
                 with open(filedbc, 'r', encoding=coding) as d:
                     self.__contents = d.read()
@@ -845,7 +850,10 @@ if __name__ == '__main__':
     # 사용법
     # f = 'sample/a.dbc'
     # f = 'sample/b.dbc'
+    # f = 'sample/vehicle.dbc'
     # dbc = pDBC(f)
+    # print(dbc.contents)
+    # print(dbc.toJson())
     
     # dbc.toXml()
     # dbc.duplicate()
@@ -873,16 +881,16 @@ if __name__ == '__main__':
     #             print(f"      {value['a']} {value['b']}")
     # exit(0)
     
-    os.makedirs('duplicate', exist_ok=True)
-    for folder, sub, files in os.walk('./sample'):
-        for file in files:
-            if file.endswith('.dbc') == False:
-                continue
-            i = os.path.join(folder, file)
-            try:
-                dbc = pDBC(i)
-            except Exception as e:
-                print(f"{e}")
-            dbc.duplicate(output=os.path.join('duplicate', file))
+    # os.makedirs('duplicate', exist_ok=True)
+    # for folder, sub, files in os.walk('./sample'):
+    #     for file in files:
+    #         if file.endswith('.dbc') == False:
+    #             continue
+    #         i = os.path.join(folder, file)
+    #         try:
+    #             dbc = pDBC(i)
+    #         except Exception as e:
+    #             print(f"{e}")
+    #         dbc.duplicate(output=os.path.join('duplicate', file))
     
     print('done')

@@ -49,7 +49,7 @@ class pDBC(object):
             encodinglist.insert(0, encoding)
         for coding in encodinglist:
             if coding == 'raise-exception':
-                raise UnicodeError('check encoding')
+                raise UnicodeError(f'check encoding: {filedbc}')
             try:
                 with open(filedbc, 'r', encoding=coding) as d:
                     self.__contents = d.read()
@@ -843,8 +843,9 @@ class pDBC(object):
     
 if __name__ == '__main__':
     # 사용법
-    f = 'aa.dbc'
-    dbc = pDBC(f)
+    f = 'sample/a.dbc'
+    # dbc = pDBC(f)
+    
     # dbc.toXml()
     # dbc.duplicate()
     # j = dbc.toJson()
@@ -877,7 +878,10 @@ if __name__ == '__main__':
     #         if file.endswith('.dbc') == False:
     #             continue
     #         i = os.path.join(folder, file)
-    #         dbc = pDBC(i)
+    #         try:
+    #             dbc = pDBC(i)
+    #         except Exception as e:
+    #             print(f"{e}")
     #         dbc.duplicate(output=os.path.join('duplicate', file))
     
     print('done')

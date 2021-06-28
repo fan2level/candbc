@@ -44,7 +44,7 @@ class pDBC(object):
 
         if debug: print("file: {0}".format(filedbc))
         
-        encodinglist = ['utf-8', 'euc-kr', 'raise-exception']
+        encodinglist = ['utf-8', 'euc-kr', 'cp1252', 'raise-exception']
         if encoding not in encodinglist:
             encodinglist.insert(0, encoding)
         for coding in encodinglist:
@@ -843,7 +843,8 @@ class pDBC(object):
     
 if __name__ == '__main__':
     # 사용법
-    f = 'sample/a.dbc'
+    # f = 'sample/a.dbc'
+    # f = 'sample/b.dbc'
     # dbc = pDBC(f)
     
     # dbc.toXml()
@@ -872,16 +873,16 @@ if __name__ == '__main__':
     #             print(f"      {value['a']} {value['b']}")
     # exit(0)
     
-    # os.makedirs('duplicate', exist_ok=True)
-    # for folder, sub, files in os.walk('./sample'):
-    #     for file in files:
-    #         if file.endswith('.dbc') == False:
-    #             continue
-    #         i = os.path.join(folder, file)
-    #         try:
-    #             dbc = pDBC(i)
-    #         except Exception as e:
-    #             print(f"{e}")
-    #         dbc.duplicate(output=os.path.join('duplicate', file))
+    os.makedirs('duplicate', exist_ok=True)
+    for folder, sub, files in os.walk('./sample'):
+        for file in files:
+            if file.endswith('.dbc') == False:
+                continue
+            i = os.path.join(folder, file)
+            try:
+                dbc = pDBC(i)
+            except Exception as e:
+                print(f"{e}")
+            dbc.duplicate(output=os.path.join('duplicate', file))
     
     print('done')

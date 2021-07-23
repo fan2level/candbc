@@ -513,22 +513,27 @@ class pDBC(object):
         return self.__signal_extended_value_type_list
 
     def validate(self):
-        """todo: validate can.dbc file compatibility
+        """validate dbc file compatibility
         """
-        # # nodes
-        # nodes = set()
-        # for message in self.messages:
-        #     nodes.add(message['transmitter'])
-        #     for signal in message['signals']:
-        #         nodes.update(signal['receivers'])
-        # print(f"nodes...")
-        # if len(nodes.symmetric_difference(self.nodes)) > 0:
-        #     print(f"  {nodes.symmetric_difference(self.nodes)}")
-        # else:
-        #     print(f"  done")
-        # # messages
-        # # signals
-        # print('done')
+        print(f"{self.__file}")
+        jj = self.toJson()
+        pp = json.loads(jj)
+        for signal in pp['signals']:
+            size = int(signal['size'])
+            factor = float(signal['f'])
+            offset = float(signal['o'])
+            rawvalue = 2**size - 1
+            # physical-value = raw-value * factor + offset
+            physicalmin =        0 * factor + offset
+            if physicalmin == round(physicalmin): physicalmin = round(physicalmin)
+            physicalmax = rawvalue * factor + offset
+            if physicalmax == round(physicalmax): physicalmax = round(physicalmax)
+            minimum = float(signal['n'])
+            if minimum == round(minimum): minimum = round(minimum)
+            maximum = float(signal['x'])
+            if maximum == round(maximum): maximum = round(maximum)
+            if physicalmin > minimum or physicalmax < maximum:
+                print(f"  {signal['name']} ({physicalmin}, {physicalmax}) ({minimum}, {maximum})")
     
     def duplicate(self, output=None):
         """ duplicate dbc file using parsed data
@@ -850,8 +855,9 @@ if __name__ == '__main__':
     # 사용법
     # f = 'sample/a.dbc'
     # f = 'sample/b.dbc'
-    # f = 'sample/vehicle.dbc'
-    # dbc = pDBC(f)
+    f = 'sample/vehicle.dbc'
+    dbc = pDBC(f)
+    # dbc.validate()
     # print(dbc.contents)
     # print(dbc.toJson())
     
@@ -879,10 +885,10 @@ if __name__ == '__main__':
     #         print(f"    values")
     #         for value in signal['values']:
     #             print(f"      {value['a']} {value['b']}")
-    # exit(0)
+    exit(0)
     
     # os.makedirs('duplicate', exist_ok=True)
-    # for folder, sub, files in os.walk('./sample'):
+    # for folder, sub, files in os.walk('./sample/aaa'):
     #     for file in files:
     #         if file.endswith('.dbc') == False:
     #             continue
@@ -891,6 +897,7 @@ if __name__ == '__main__':
     #             dbc = pDBC(i)
     #         except Exception as e:
     #             print(f"{e}")
-    #         dbc.duplicate(output=os.path.join('duplicate', file))
+    #         dbc.validate()
+    #         # dbc.duplicate(output=os.path.join('duplicate', file))
     
     print('done')
